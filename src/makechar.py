@@ -12,7 +12,7 @@ def validate(chars) -> int:
 
 print("-- program ready to start --")
 
-with open(ASE_NAME, "rb") as f:
+with open("icons.ase", "rb") as f:
     ase = AsepriteFile(f.read())
 
 font = fontforge.open(SFD_NAME) # type: ignore
@@ -41,7 +41,7 @@ for i, byte in enumerate((chunk := ase.frames[0].chunks[index + len_layers + 2])
     print('##' if byte else '  ', end='')
     if (i + 1) % SQUARE_SIZE == 0: print()
     if not byte: continue
-    x, y = i % SQUARE_SIZE + chunk.x_pos, SQUARE_SIZE - i // SQUARE_SIZE - chunk.y_pos
+    x, y = i % SQUARE_SIZE + chunk.x_pos, SQUARE_SIZE - i // SQUARE_SIZE - chunk.y_pos - font.descent
     pen.moveTo((x, y))
     pen.lineTo((x+1, y))
     pen.lineTo((x+1, y-1))
@@ -53,6 +53,7 @@ print("-- adjusting character --")
 c.removeOverlap()
 c.simplify()
 c.correctDirection()
+c.autoHint()
 
 print("-- all done! saving changes --")
 
@@ -60,10 +61,10 @@ pen = None
 font.save(SFD_NAME)
 
 if input("would you also like to create the fonts? y/[n]:") == 'y':
-    font.generate(f"{FONT_SAVE_NAME}woff2")
-    font.generate(f"{FONT_SAVE_NAME}woff")
-    font.generate(f"{FONT_SAVE_NAME}ttf")
-    font.generate(f"{FONT_SAVE_NAME}otf")
+    font.generate(f"{SAVE_FOLDER}woff2")
+    font.generate(f"{SAVE_FOLDER}woff")
+    font.generate(f"{SAVE_FOLDER}ttf")
+    font.generate(f"{SAVE_FOLDER}otf")
     
     print("-- fonts generated! --")
 
