@@ -23,21 +23,20 @@ pen = c.glyphPen()
 
 print("-- contents of gliph erased --")
 
-len_layers = len(ase.layers)
+celchunks = [_ for _ in ase.frames[0].chunks if isinstance(_, CelChunk)]
 print(
     "Select the index of the layer to import:",
     *[
         f'{i} - {layer.name}'
-        for i, layer in enumerate(
-            _ for _ in ase.layers if _.layer_type == 0)
+        for i, layer in enumerate(ase.layers[_.layer_index] for _ in celchunks)
     ],
     sep='\n'
 )
-while not 0 <= (index := validate(input("- : "))) < len_layers: pass
+while not 0 <= (index := validate(input("- : "))) < len(ase.layers): pass
 
 print("-- value accepted, evaluating changes -- ")
 
-for i, byte in enumerate((chunk := ase.frames[0].chunks[index + len_layers + 2]).data['data']):
+for i, byte in enumerate((chunk := celchunks[index]).data['data']):
     print('##' if byte else '  ', end='')
     if (i + 1) % SQUARE_SIZE == 0: print()
     if not byte: continue
