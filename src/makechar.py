@@ -36,11 +36,14 @@ while not 0 <= (index := validate(input("- : "))) < len(ase.layers): pass
 
 print("-- value accepted, evaluating changes -- ")
 
-for i, byte in enumerate((data := (chunk := celchunks[index]).data)['data']):
+chunk = celchunks[index]
+data = chunk.data
+data_width = data["width"]
+for i, byte in enumerate(data['data']):
     print('##' if byte else '  ', end='')
-    if (i + 1) % data['width'] == 0: print()
+    if (i + 1) % data_width == 0: print()
     if not byte: continue
-    x, y = i % data['width'] + chunk.x_pos, HEIGHT - i // data['height'] - chunk.y_pos - font.descent
+    x, y = i % data_width + chunk.x_pos, HEIGHT - chunk.y_pos - i // data_width - font.descent
     pen.moveTo((x, y))
     pen.lineTo((x+1, y))
     pen.lineTo((x+1, y-1))
