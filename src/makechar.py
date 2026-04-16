@@ -1,9 +1,8 @@
 from aseprite import AsepriteFile
 
-SQUARE_SIZE = 16
-ASE_NAME = "project.ase"
-SFD_NAME = 'font.sfd'
-FONT_SAVE_NAME = f"font."
+ASE_NAME = "icons.ase"
+SFD_NAME = "font.sfd"
+SAVE_FOLDER = ""
 
 def validate(chars) -> int:
     try: return int(chars)
@@ -12,13 +11,14 @@ def validate(chars) -> int:
 
 print("-- program ready to start --")
 
-with open("icons.ase", "rb") as f:
+with open(ASE_NAME, "rb") as f:
     ase = AsepriteFile(f.read())
+    WIDTH, HEIGHT = ase.header.width, ase.header.height
 
 font = fontforge.open(SFD_NAME) # type: ignore
 font.selection.select(glyph := (input('Select the character: ')[0]))
 font.clear()
-c= font.createChar(-1, glyph)
+c = font.createChar(-1, glyph)
 pen = c.glyphPen()
 
 print("-- contents of gliph erased --")
@@ -36,11 +36,11 @@ while not 0 <= (index := validate(input("- : "))) < len(ase.layers): pass
 
 print("-- value accepted, evaluating changes -- ")
 
-for i, byte in enumerate((chunk := celchunks[index]).data['data']):
+for i, byte in enumerate((data := (chunk := celchunks[index]).data)['data']):
     print('##' if byte else '  ', end='')
-    if (i + 1) % SQUARE_SIZE == 0: print()
+    if (i + 1) % data['width'] == 0: print()
     if not byte: continue
-    x, y = i % SQUARE_SIZE + chunk.x_pos, SQUARE_SIZE - i // SQUARE_SIZE - chunk.y_pos - font.descent
+    x, y = i % data['width'] + chunk.x_pos, HEIGHT - i // data['height'] - chunk.y_pos - font.descent
     pen.moveTo((x, y))
     pen.lineTo((x+1, y))
     pen.lineTo((x+1, y-1))
@@ -52,14 +52,14 @@ print("-- adjusting character --")
 c.removeOverlap()
 c.simplify()
 c.correctDirection()
-c.autoHint()
+# c.autoHint()
 
 print("-- all done! saving changes --")
 
 pen = None
 font.save(SFD_NAME)
 
-if input("would you also like to create the fonts? y/[n]:") == 'y':
+if input("would you also like to create the fonts? y/[n]: ") == 'y':
     font.generate(f"{SAVE_FOLDER}woff2")
     font.generate(f"{SAVE_FOLDER}woff")
     font.generate(f"{SAVE_FOLDER}ttf")
